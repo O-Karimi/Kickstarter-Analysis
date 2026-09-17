@@ -13,10 +13,20 @@ data_list <-lapply(file_list, read.csv)
 
 all_data <- do.call(rbind, data_list)
 
-# Some Initial checks on data and maybe cleaning
+#------------ Some Initial checks on data and maybe cleaning
+
+## First we should see our data and how it looks like
+
+#head(all_data)
+dim(all_data)
+colnames(all_data)
+
+#str(all_data)
+
+glimpse(all_data)
 
 # Some visualizations
 
-# Some dependency checks
+# Some dependency checks and hypothesis checks
 
 # Calculating impacts on success of a kickstarter
