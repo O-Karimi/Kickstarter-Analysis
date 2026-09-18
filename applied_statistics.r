@@ -404,6 +404,96 @@ final_cleanup <- final_cleanup %>%
 
 #--------------- Some visualizations
 
+install.packages("ggplot2")
+library("ggplot2")
+
+ggplot(expanded_cleanup, aes(x = category_parent_name, fill = state)) +
+  geom_bar(position = "fill") +
+  coord_flip() +
+  labs(y = "Proportion", x = "Category")
+
+
+ggplot(expanded_cleanup, aes(x = state, y = goal * fx_rate, fill = state)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_y_log10(labels = scales::dollar_format()) +
+  labs(y = "Standardized Goal (USD, Log Scale)")
+
+
+expanded_cleanup <- expanded_cleanup %>%
+  mutate(
+    prep_days = (launched_at - created_at) / 86400,
+    
+    campaign_days = (deadline - launched_at) / 86400,
+    
+    actual_days = (state_changed_at - launched_at) / 86400
+  )
+
+
+ggplot(expanded_cleanup, aes(x = state, y = prep_days + 1, fill = state)) +
+  geom_boxplot(alpha = 0.7) +
+  scale_y_log10() +
+  labs(
+    title = "Campaign Preparation Time by Outcome",
+    x = "Project State", 
+    y = "Preparation Days (Log Scale, +1 Day Offset)"
+  ) +
+  theme_minimal()
+
+ggplot(expanded_cleanup, aes(x = campaign_days, fill = state)) +
+  geom_density(alpha = 0.5) +
+  coord_cartesian(xlim = c(0, 65)) +
+  labs(
+    title = "Density of Campaign Duration",
+    x = "Planned Duration (Days)", 
+    y = "Density"
+  ) +
+  theme_minimal()
+
+library(scales)
+
+ggplot(expanded_cleanup, aes(x = goal * fx_rate, fill = state)) +
+  geom_histogram(bins = 40, color = "white", alpha = 0.8) +
+  scale_x_log10(labels = label_dollar()) +
+  facet_wrap(~ state, ncol = 1, scales = "free_y") +
+  labs(
+    title = "Distribution of Financial Goals",
+    subtitle = "Standardized to USD (Log Scale)",
+    x = "Goal Amount (USD)",
+    y = "Count of Projects"
+  ) +
+  theme_minimal()
+
+ggplot(expanded_cleanup, aes(x = backers_count + 1, fill = state)) +
+  geom_histogram(bins = 40, color = "white", alpha = 0.8) +
+  scale_x_log10(labels = label_comma()) +
+  facet_wrap(~ state, ncol = 1, scales = "free_y") +
+  labs(
+    title = "Distribution of Backer Counts",
+    subtitle = "Log Scale (+1 Offset for zero-backer projects)",
+    x = "Number of Backers",
+    y = "Count of Projects"
+  ) +
+  theme_minimal()
+
 #---------------- Some dependency checks and hypothesis checks
+
+# Having a video will affect the outcome?
+video_table <- table(expanded_cleanup$has_video, expanded_cleanup$state)
+
+# Run the Chi-Square test
+chi_sq_result <- chisq.test(video_table)
+print(chi_sq_result)s
+
+
+
+
+# Goal is equal for success and failed ones
+expanded_cleanup <- expanded_cleanup %>%
+    filter(state %in% c("successful", "failed")) %>%
+  mutate(state = as.factor(state))
+
+levels(expanded_cleanup$state)
+
+t.test(log_usd_goal ~ state, data = expanded_cleanup)
 
 #------------------ Calculating impacts on success of a kickstarter
