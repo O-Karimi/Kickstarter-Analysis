@@ -373,6 +373,34 @@ final_cleanup <- final_cleanup %>%
 final_cleanup <- final_cleanup %>%
   mutate(is_in_post_campaign_pledging_phase = as.logical(is_in_post_campaign_pledging_phase))
 
+final_cleanup <- final_cleanup %>%
+  mutate(is_launched = as.logical(is_launched))
+
+final_cleanup <- final_cleanup %>%
+  mutate(is_starrable = as.logical(is_starrable))
+
+final_cleanup <- final_cleanup %>%
+  mutate(prelaunch_activated = as.logical(prelaunch_activated))
+
+final_cleanup <- final_cleanup %>%
+  mutate(spotlight = as.logical(spotlight))
+
+final_cleanup <- final_cleanup %>%
+  mutate(staff_pick = as.logical(staff_pick))
+
+final_cleanup <- final_cleanup %>%
+  mutate(state = as.factor(state))
+
+final_cleanup <- final_cleanup %>%
+  mutate(category_name = as.factor(category_name))
+
+final_cleanup <- final_cleanup %>%
+  mutate(category_parent_name = as.factor(category_parent_name))
+
+final_cleanup <- final_cleanup %>%
+  mutate(has_video = has_video == "Yes")
+
+# Finally our data is clean
 
 #--------------- Some visualizations
 
