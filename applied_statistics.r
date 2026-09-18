@@ -91,9 +91,6 @@ initial_cleanup <- initial_cleanup %>%
   select(-usd_type)
 
 initial_cleanup <- initial_cleanup %>%
-  select(-usd_type)
-
-initial_cleanup <- initial_cleanup %>%
   select(-usd_pledged)
 
 dim(initial_cleanup)
@@ -313,6 +310,68 @@ expanded_cleanup <- expanded_cleanup %>%
   select(-video)
 
 table(expanded_cleanup$has_video)
+
+## cleaning up environment
+
+rm(list = setdiff(ls(), "expanded_cleanup"))
+gc()
+format(object.size(expanded_cleanup), units = "GiB")
+
+## Let's check up each feature
+
+final_cleanup <- expanded_cleanup
+
+glimpse(final_cleanup)
+
+#count(final_cleanup$converted_pledged_amount == "null")
+
+sum(final_cleanup$converted_pledged_amount == "null", na.rm = TRUE)
+
+sum(final_cleanup$deadline == 0, na.rm = TRUE)
+
+table(final_cleanup$disable_communication)
+final_cleanup <-final_cleanup %>%
+  select(-disable_communication)
+
+sum(final_cleanup$goal == 0, na.rm = TRUE)
+
+table(final_cleanup$is_in_post_campaign_pledging_phase)
+
+sum(final_cleanup$launched_at == 0, na.rm = TRUE)
+
+final_cleanup <- final_cleanup %>%
+  filter(launched_at > 0) # First filter
+
+dim(final_cleanup)
+
+sum(final_cleanup$converted_pledged_amount == "null", na.rm = TRUE)
+
+sum(final_cleanup$deadline == 0, na.rm = TRUE)
+
+sum(final_cleanup$goal == 0, na.rm = TRUE)
+
+glimpse(final_cleanup)
+
+final_cleanup <-final_cleanup %>%
+  select(-creator_name)
+
+## Filtering is done and we lost around 15000 data which is less than 10%
+
+## Making sure about the data types
+
+glimpse(final_cleanup)
+
+final_cleanup <- final_cleanup %>%
+  mutate(converted_pledged_amount = as.integer(converted_pledged_amount))
+
+final_cleanup <- final_cleanup %>%
+  mutate(country_displayable_name = as.factor(country_displayable_name))
+
+final_cleanup <- final_cleanup %>%
+  mutate(currency = as.factor(currency))
+
+final_cleanup <- final_cleanup %>%
+  mutate(is_in_post_campaign_pledging_phase = as.logical(is_in_post_campaign_pledging_phase))
 
 
 #--------------- Some visualizations
