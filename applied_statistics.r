@@ -497,3 +497,67 @@ levels(expanded_cleanup$state)
 t.test(log_usd_goal ~ state, data = expanded_cleanup)
 
 #------------------ Calculating impacts on success of a kickstarter
+
+library(randomForest)
+library(caret)
+
+# Selecting the possible affecting features
+ml_data <- expanded_cleanup %>%
+  select(
+    state, 
+    log_usd_goal, 
+    prep_days, 
+    campaign_days, 
+    has_video, 
+    staff_pick, 
+    category_parent_name
+  ) %>%
+  na.omit()
+
+set.seed(123)
+
+# Create an 80/20 train/test split
+train_index <- createDataPartition(ml_data$state, p = 0.8, list = FALSE)
+train_set <- ml_data[train_index, ]
+test_set <- ml_data[-train_index, ]
+
+
+## Let's train
+
+rf_model <- randomForest(
+  state ~ ., 
+  data = train_set, 
+  ntree = 100, 
+  importance = TRUE
+)
+
+print(rf_model)
+
+# Plot the importance of each variable
+varImpPlot(rf_model, main = "Predictive Feature Importance")
+
+
+# test data
+predictions <- predict(rf_model, newdata = test_set)
+
+# Compare predictions against the actual outcomes using a Confusion Matrix
+confusionMatrix(predictions, test_set$state)
+
+
+
+## Prediction visualzes
+
+# Extract the importance data
+importance_data <- as.data.frame(importance(rf_model))
+importance_data$Feature <- rownames(importance_data)
+
+ggplot(importance_data, aes(x = reorder(Feature, MeanDecreaseAccuracy), y = MeanDecreaseAccuracy)) +
+  geom_col(fill = "#2c3e50", alpha = 0.9) +
+  coord_flip() +
+  labs(
+    title = "Random Forest: Predictive Feature Importance",
+    subtitle = "Ranked by Mean Decrease in Model Accuracy",
+    x = "Campaign Feature",
+    y = "Importance (Mean Decrease in Accuracy)"
+  ) +
+  theme_minimal(base_size = 14)
